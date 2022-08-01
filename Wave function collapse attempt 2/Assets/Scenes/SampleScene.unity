@@ -346,7 +346,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tileStateHolder: {fileID: 4271759546031522760, guid: b7765bea3d0f8f845a32c15991dda260, type: 3}
-  mapWidth: 3
-  mapHeight: 3
+  mapWidth: 10
+  mapHeight: 10
   tileSize: 10
   test: {fileID: 11400000, guid: 5173c5a399068d04f8893247d3311504, type: 2}

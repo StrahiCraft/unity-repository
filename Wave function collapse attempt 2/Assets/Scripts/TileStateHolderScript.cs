@@ -16,10 +16,10 @@ public class TileStateHolderScript : MonoBehaviour
 
     public void CollapseTile()
     {
-        int chosenTileIndex = Random.Range(0, listOfTiles.Count - 1);
+        int chosenTileIndex = Random.Range(0, listOfTiles.Count);
         TileScriptableObject chosenTile = listOfTiles[chosenTileIndex];
 
-        Quaternion rotation = Quaternion.Euler(0, chosenTile.RotationIndex * 90, 0);
+        Quaternion rotation = Quaternion.Euler(0, chosenTile.RotationIndex * 90f, 0);
 
         Instantiate(chosenTile.TileMesh, transform.position, rotation, transform);
 

@@ -52,6 +52,7 @@ public class TileMapGeneratorScript : MonoBehaviour
     {
         int minEntropy = int.MaxValue;
         int minEntropyIndex = -1;
+        List<int> possibeIndexes = new List<int>();
 
         for(int i = 0; i < mapWidth * mapHeight; i++)
         {
@@ -59,19 +60,24 @@ public class TileMapGeneratorScript : MonoBehaviour
             {
                 int currentTileEntropy = tileStateHolderArray[i].GetComponent<TileStateHolderScript>().Entropy;
 
+                if(currentTileEntropy == minEntropy)
+                {
+                    possibeIndexes.Add(i);
+                }
                 if (currentTileEntropy < minEntropy)
                 {
+                    possibeIndexes.Clear();
                     minEntropy = currentTileEntropy;
-                    minEntropyIndex = i;
+                    possibeIndexes.Add(i);
                 }
             }
         }
-        return minEntropyIndex;
+        return possibeIndexes[Random.Range(0, possibeIndexes.Count)];
     }
 
+    Stack<int> stack = new Stack<int>();
     void Propagate(int lowestEntropyIndex)
     {
-        Stack<int> stack = new Stack<int>();
         stack.Push(lowestEntropyIndex);
 
         while (stack.Count > 0)
@@ -79,7 +85,10 @@ public class TileMapGeneratorScript : MonoBehaviour
             int currentIndex = stack.Pop();
             List<TileScriptableObject> currentListOfTiles =
                 tileStateHolderArray[currentIndex].GetComponent<TileStateHolderScript>().ListOfTiles;
-
+            UpdatePositiveZ(currentIndex, currentListOfTiles);
+            UpdateNegativeZ(currentIndex, currentListOfTiles);
+            UpdatePositiveX(currentIndex, currentListOfTiles);
+            UpdateNegativeX(currentIndex, currentListOfTiles);
         }
     }
     void UpdatePositiveZ(int currentIndex, List<TileScriptableObject> currentListOfTiles)
@@ -96,10 +105,139 @@ public class TileMapGeneratorScript : MonoBehaviour
         int i = 0;
         while (i < otherListOfTiles.Count)
         {
+            bool validNeighbour = false;
             for(int j = 0; j < currentListOfTiles.Count; j++)
             {
-
+                if (otherListOfTiles[i].NegativeZ == currentListOfTiles[j].PositiveZ)
+                {
+                    validNeighbour = true;
+                    break;
+                }
             }
+            if (validNeighbour)
+            {
+                i++;
+            }
+            else
+            {
+                otherListOfTiles.RemoveAt(i);
+            }
+        }
+        if (otherListOfTiles.Count != otherListCount)
+        {
+            stack.Push(otherIndex);
+        }
+    }
+    void UpdateNegativeZ(int currentIndex, List<TileScriptableObject> currentListOfTiles)
+    {
+        int otherIndex = currentIndex - mapWidth;
+        if (otherIndex < 0)
+        {
+            return;
+        }
+        List<TileScriptableObject> otherListOfTiles =
+            tileStateHolderArray[otherIndex].GetComponent<TileStateHolderScript>().ListOfTiles;
+        int otherListCount = otherListOfTiles.Count;
+
+        int i = 0;
+        while (i < otherListOfTiles.Count)
+        {
+            bool validNeighbour = false;
+            for (int j = 0; j < currentListOfTiles.Count; j++)
+            {
+                if (otherListOfTiles[i].PositiveZ == currentListOfTiles[j].NegativeZ)
+                {
+                    validNeighbour = true;
+                    break;
+                }
+            }
+            if (validNeighbour)
+            {
+                i++;
+            }
+            else
+            {
+                otherListOfTiles.RemoveAt(i);
+            }
+        }
+        if (otherListOfTiles.Count != otherListCount && !stack.Contains(otherIndex))
+        {
+            stack.Push(otherIndex);
+        }
+    }
+    void UpdatePositiveX(int currentIndex, List<TileScriptableObject> currentListOfTiles)
+    {
+        int otherIndex = currentIndex + mapHeight;
+        if (otherIndex >= mapWidth * mapHeight)
+        {
+            return;
+        }
+        List<TileScriptableObject> otherListOfTiles =
+            tileStateHolderArray[otherIndex].GetComponent<TileStateHolderScript>().ListOfTiles;
+        int otherListCount = otherListOfTiles.Count;
+
+        int i = 0;
+        while (i < otherListOfTiles.Count)
+        {
+            bool validNeighbour = false;
+            for (int j = 0; j < currentListOfTiles.Count; j++)
+            {
+                if (otherListOfTiles[i].NegativeX == currentListOfTiles[j].PositiveX)
+                {
+                    validNeighbour = true;
+                    break;
+                }
+            }
+            if (validNeighbour)
+            {
+                i++;
+            }
+            else
+            {
+                otherListOfTiles.RemoveAt(i);
+            }
+        }
+        if (otherListOfTiles.Count != otherListCount && !stack.Contains(otherIndex))
+        {
+            stack.Push(otherIndex);
+        }
+    }
+    void UpdateNegativeX(int currentIndex, List<TileScriptableObject> currentListOfTiles)
+    {
+        int otherIndex = currentIndex - mapHeight;
+        
+        if (otherIndex < 0)
+        {
+            return;
+        }
+        List<TileScriptableObject> otherListOfTiles =
+            tileStateHolderArray[otherIndex].GetComponent<TileStateHolderScript>().ListOfTiles;
+        int otherListCount = otherListOfTiles.Count;
+
+        int i = 0;
+        while (i < otherListOfTiles.Count)
+        {
+            bool validNeighbour = false;
+            for (int j = 0; j < currentListOfTiles.Count; j++)
+            {
+                if (otherListOfTiles[i].PositiveX == currentListOfTiles[j].NegativeX)
+                {
+                    validNeighbour = true;
+                    break;
+                }
+            }
+            if (validNeighbour)
+            {
+                i++;
+            }
+            else
+            {
+                otherListOfTiles.RemoveAt(i);
+            }
+        }
+        if (otherListOfTiles.Count != otherListCount && !stack.Contains(otherIndex))
+        {
+            stack.Push(otherIndex);
         }
     }
 }
