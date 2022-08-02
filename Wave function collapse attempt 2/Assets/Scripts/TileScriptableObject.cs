@@ -10,7 +10,7 @@ public class TileScriptableObject : ScriptableObject
     [SerializeField] string positiveX;
     [SerializeField] string negativeX;
 
-    public GameObject TileMesh      => tileMesh;
+    public GameObject TileMesh => tileMesh;
     public float RotationIndex => rotationIndex;
     public string PositiveZ => positiveZ;
     public string NegativeZ => negativeZ;

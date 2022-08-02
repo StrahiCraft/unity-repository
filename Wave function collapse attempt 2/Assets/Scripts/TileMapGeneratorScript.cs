@@ -10,11 +10,11 @@ public class TileMapGeneratorScript : MonoBehaviour
     [SerializeField] float tileSize;
     [SerializeField] TileScriptableObject test;
 
-    GameObject[] tileStateHolderArray;
+    GameObject[,] tileStateHolderMatrix;
 
     void Start()
     {
-        tileStateHolderArray = new GameObject[mapWidth * mapHeight];
+        tileStateHolderMatrix = new GameObject[mapWidth, mapHeight];
         int uncollapsedTileCount = mapWidth * mapHeight;
 
         SpawnTileStateHolders();
@@ -28,7 +28,7 @@ public class TileMapGeneratorScript : MonoBehaviour
         {
             for(int j = 0; j < mapHeight; j++)
             {
-                tileStateHolderArray[i * mapWidth + j] =
+                tileStateHolderMatrix[i, j] =
                     Instantiate(tileStateHolder, new Vector3(i * tileSize, 0f, j * tileSize), Quaternion.identity);
             }
         }
@@ -38,68 +38,71 @@ public class TileMapGeneratorScript : MonoBehaviour
     {
         while (uncollapsedTileCount > 0)
         {
-            int lowestEntropyIndex = FindLowestEntropy();
-            tileStateHolderArray[lowestEntropyIndex].GetComponent<TileStateHolderScript>().CollapseTile();
+            Vector2 lowestEntropyPos = FindLowestEntropy();
+            tileStateHolderMatrix[(int)lowestEntropyPos.x, (int)lowestEntropyPos.y].GetComponent<TileStateHolderScript>().CollapseTile();
 
-            Propagate(lowestEntropyIndex);
+            Propagate(lowestEntropyPos);
 
             uncollapsedTileCount--;
             yield return new WaitForSeconds(0.1f);
         }
     }
 
-    int FindLowestEntropy()
+    Vector2 FindLowestEntropy()
     {
         int minEntropy = int.MaxValue;
-        int minEntropyIndex = -1;
-        List<int> possibeIndexes = new List<int>();
+        List<Vector2> possibeIndexes = new List<Vector2>();
 
-        for(int i = 0; i < mapWidth * mapHeight; i++)
+        for(int x = 0; x < mapWidth; x++)
         {
-            if (!tileStateHolderArray[i].GetComponent<TileStateHolderScript>().Collapsed)
+            for(int y = 0; y < mapHeight; y++)
             {
-                int currentTileEntropy = tileStateHolderArray[i].GetComponent<TileStateHolderScript>().Entropy;
+                if (!tileStateHolderMatrix[x, y].GetComponent<TileStateHolderScript>().Collapsed)
+                {
+                    int currentTileEntropy = tileStateHolderMatrix[x, y].GetComponent<TileStateHolderScript>().Entropy;
 
-                if(currentTileEntropy == minEntropy)
-                {
-                    possibeIndexes.Add(i);
-                }
-                if (currentTileEntropy < minEntropy)
-                {
-                    possibeIndexes.Clear();
-                    minEntropy = currentTileEntropy;
-                    possibeIndexes.Add(i);
+                    if (currentTileEntropy == minEntropy)
+                    {
+                        possibeIndexes.Add(new Vector2(x, y));
+                    }
+                    if (currentTileEntropy < minEntropy)
+                    {
+                        possibeIndexes.Clear();
+                        minEntropy = currentTileEntropy;
+                        possibeIndexes.Add(new Vector2(x, y));
+                    }
                 }
             }
         }
         return possibeIndexes[Random.Range(0, possibeIndexes.Count)];
     }
 
-    Stack<int> stack = new Stack<int>();
-    void Propagate(int lowestEntropyIndex)
+    Stack<Vector2> stack = new Stack<Vector2>();
+    void Propagate(Vector2 lowestEntropyPos)
     {
-        stack.Push(lowestEntropyIndex);
+        stack.Push(lowestEntropyPos);
 
         while (stack.Count > 0)
         {
-            int currentIndex = stack.Pop();
+            Vector2 currentPos = stack.Pop();
             List<TileScriptableObject> currentListOfTiles =
-                tileStateHolderArray[currentIndex].GetComponent<TileStateHolderScript>().ListOfTiles;
-            UpdatePositiveZ(currentIndex, currentListOfTiles);
-            UpdateNegativeZ(currentIndex, currentListOfTiles);
-            UpdatePositiveX(currentIndex, currentListOfTiles);
-            UpdateNegativeX(currentIndex, currentListOfTiles);
+                tileStateHolderMatrix[(int)currentPos.x, (int)currentPos.y].GetComponent<TileStateHolderScript>().ListOfTiles;
+            UpdatePositiveZ(currentPos, currentListOfTiles);
+            UpdateNegativeZ(currentPos, currentListOfTiles);
+            UpdatePositiveX(currentPos, currentListOfTiles);
+            UpdateNegativeX(currentPos, currentListOfTiles);
         }
     }
-    void UpdatePositiveZ(int currentIndex, List<TileScriptableObject> currentListOfTiles)
+    void UpdatePositiveZ(Vector2 currentIndex, List<TileScriptableObject> currentListOfTiles)
     {
-        int otherIndex = currentIndex + mapWidth;
-        if (otherIndex >= mapWidth * mapHeight)
+        Vector2 otherIndex = currentIndex;
+        otherIndex.y += 1;
+        if (otherIndex.y >= mapHeight)
         {
             return;
         }
         List<TileScriptableObject> otherListOfTiles = 
-            tileStateHolderArray[otherIndex].GetComponent<TileStateHolderScript>().ListOfTiles;
+            tileStateHolderMatrix[(int)otherIndex.x, (int)otherIndex.y].GetComponent<TileStateHolderScript>().ListOfTiles;
         int otherListCount = otherListOfTiles.Count;
 
         int i = 0;
@@ -128,15 +131,16 @@ public class TileMapGeneratorScript : MonoBehaviour
             stack.Push(otherIndex);
         }
     }
-    void UpdateNegativeZ(int currentIndex, List<TileScriptableObject> currentListOfTiles)
+    void UpdateNegativeZ(Vector2 currentIndex, List<TileScriptableObject> currentListOfTiles)
     {
-        int otherIndex = currentIndex - mapWidth;
-        if (otherIndex < 0)
+        Vector2 otherIndex = currentIndex;
+        otherIndex.y -= 1;
+        if (otherIndex.y < 0)
         {
             return;
         }
         List<TileScriptableObject> otherListOfTiles =
-            tileStateHolderArray[otherIndex].GetComponent<TileStateHolderScript>().ListOfTiles;
+            tileStateHolderMatrix[(int)otherIndex.x, (int)otherIndex.y].GetComponent<TileStateHolderScript>().ListOfTiles;
         int otherListCount = otherListOfTiles.Count;
 
         int i = 0;
@@ -165,15 +169,16 @@ public class TileMapGeneratorScript : MonoBehaviour
             stack.Push(otherIndex);
         }
     }
-    void UpdatePositiveX(int currentIndex, List<TileScriptableObject> currentListOfTiles)
+    void UpdatePositiveX(Vector2 currentIndex, List<TileScriptableObject> currentListOfTiles)
     {
-        int otherIndex = currentIndex + mapHeight;
-        if (otherIndex >= mapWidth * mapHeight)
+        Vector2 otherIndex = currentIndex;
+        otherIndex.x += 1;
+        if (otherIndex.x >= mapWidth)
         {
             return;
         }
         List<TileScriptableObject> otherListOfTiles =
-            tileStateHolderArray[otherIndex].GetComponent<TileStateHolderScript>().ListOfTiles;
+            tileStateHolderMatrix[(int)otherIndex.x, (int)otherIndex.y].GetComponent<TileStateHolderScript>().ListOfTiles;
         int otherListCount = otherListOfTiles.Count;
 
         int i = 0;
@@ -202,16 +207,16 @@ public class TileMapGeneratorScript : MonoBehaviour
             stack.Push(otherIndex);
         }
     }
-    void UpdateNegativeX(int currentIndex, List<TileScriptableObject> currentListOfTiles)
+    void UpdateNegativeX(Vector2 currentIndex, List<TileScriptableObject> currentListOfTiles)
     {
-        int otherIndex = currentIndex - mapHeight;
-        
-        if (otherIndex < 0)
+        Vector2 otherIndex = currentIndex;
+        otherIndex.x -= 1;
+        if (otherIndex.x < 0)
         {
             return;
         }
         List<TileScriptableObject> otherListOfTiles =
-            tileStateHolderArray[otherIndex].GetComponent<TileStateHolderScript>().ListOfTiles;
+            tileStateHolderMatrix[(int)otherIndex.x, (int)otherIndex.y].GetComponent<TileStateHolderScript>().ListOfTiles;
         int otherListCount = otherListOfTiles.Count;
 
         int i = 0;
