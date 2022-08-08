@@ -24,9 +24,9 @@ public class TileMapGeneratorScript : MonoBehaviour
 
     void SpawnTileStateHolders()
     {
-        for(int i = 0; i < mapWidth; i++)
+        for (int i = 0; i < mapWidth; i++)
         {
-            for(int j = 0; j < mapHeight; j++)
+            for (int j = 0; j < mapHeight; j++)
             {
                 tileStateHolderMatrix[i, j] =
                     Instantiate(tileStateHolder, new Vector3(i * tileSize, 0f, j * tileSize), Quaternion.identity);
@@ -53,9 +53,9 @@ public class TileMapGeneratorScript : MonoBehaviour
         int minEntropy = int.MaxValue;
         List<Vector2> possibeIndexes = new List<Vector2>();
 
-        for(int x = 0; x < mapWidth; x++)
+        for (int x = 0; x < mapWidth; x++)
         {
-            for(int y = 0; y < mapHeight; y++)
+            for (int y = 0; y < mapHeight; y++)
             {
                 if (!tileStateHolderMatrix[x, y].GetComponent<TileStateHolderScript>().Collapsed)
                 {
@@ -101,7 +101,7 @@ public class TileMapGeneratorScript : MonoBehaviour
         {
             return;
         }
-        List<TileScriptableObject> otherListOfTiles = 
+        List<TileScriptableObject> otherListOfTiles =
             tileStateHolderMatrix[(int)otherIndex.x, (int)otherIndex.y].GetComponent<TileStateHolderScript>().ListOfTiles;
         int otherListCount = otherListOfTiles.Count;
 
@@ -109,7 +109,7 @@ public class TileMapGeneratorScript : MonoBehaviour
         while (i < otherListOfTiles.Count)
         {
             bool validNeighbour = false;
-            for(int j = 0; j < currentListOfTiles.Count; j++)
+            for (int j = 0; j < currentListOfTiles.Count; j++)
             {
                 if (otherListOfTiles[i].NegativeZ == currentListOfTiles[j].PositiveZ)
                 {

@@ -16,7 +16,19 @@ public class TileStateHolderScript : MonoBehaviour
 
     public void CollapseTile()
     {
-        int chosenTileIndex = Random.Range(0, listOfTiles.Count);
+        float[] tileWeights = new float[Entropy];
+        int chosenTileIndex = 0;
+        float maxWeight = 0;
+
+        for(int i = 0; i < tileWeights.Length; i++)
+        {
+            float currentTileWeight = Random.Range(0, listOfTiles[i].TileWeight);
+            if (currentTileWeight > maxWeight)
+            {
+                maxWeight = currentTileWeight;
+                chosenTileIndex = i;
+            }
+        }
         TileScriptableObject chosenTile = listOfTiles[chosenTileIndex];
 
         Quaternion rotation = Quaternion.Euler(0, chosenTile.RotationIndex * 90f, 0);

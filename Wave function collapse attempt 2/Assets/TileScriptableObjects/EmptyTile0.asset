@@ -14,7 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tileMesh: {fileID: 3282528387494467028, guid: f946d197e9c86e04e93af51c2596fca6, type: 3}
   rotationIndex: 0
+  tileWeight: 46.9
   positiveZ: -1
   negativeZ: -1
   positiveX: -1
   negativeX: -1
+  positiveY: -1
+  negativeY: -1
