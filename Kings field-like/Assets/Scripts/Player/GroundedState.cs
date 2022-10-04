@@ -1,15 +1,12 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class GroundedState : PlayerState
 {
-    public override void MovePlayer()
+    public override Vector3 MovePlayer(Transform playerTransform)
     {
-        throw new System.NotImplementedException();
-    }
-    public override void MoveCamera()
-    {
-        throw new System.NotImplementedException();
+        float x = Input.GetAxis("Horizontal");
+        float z = Input.GetAxis("Vertical");
+
+        return playerTransform.right * x + playerTransform.forward * z;
     }
 }

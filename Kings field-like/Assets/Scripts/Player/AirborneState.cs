@@ -1,15 +1,12 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class AirborneState : PlayerState
 {
-    public override void MovePlayer()
+    public override Vector3 MovePlayer(Transform playerTransform)
     {
-        throw new System.NotImplementedException();
-    }
-    public override void MoveCamera()
-    {
-        throw new System.NotImplementedException();
+        float x = Input.GetAxis("Horizontal") * .3f;
+        float z = Input.GetAxis("Vertical") * .3f;
+
+        return playerTransform.right * x + playerTransform.forward * z;
     }
 }
